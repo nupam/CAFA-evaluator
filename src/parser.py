@@ -6,8 +6,13 @@ import logging
 
 def obo_parser(obo_file, valid_rel=("is_a", "part_of")):
     """
-    Parse a OBO file and returns a list of ontologies, one for each namespace.
-    Obsolete terms are excluded as well as external namespaces.
+    Parse a OBO file and returns a dict of ontologies, one for each namespace.
+    Obsolete terms are excluded as well as external namespaces. Each ontology dict is
+    a dict of terms of form: tremId : { 'name': name,
+                                        'namespace': namespace,
+                                        'def': term_def,
+                                        'alt_id': alt_id,
+                                        'rel': list of relations }
     """
     term_dict = {}
     term_id = None
@@ -69,7 +74,14 @@ def obo_parser(obo_file, valid_rel=("is_a", "part_of")):
 
 def gt_parser(gt_file, ontologies):
     """
-    Parse ground truth file. Discard terms not included in the ontology.
+    Parse ground truth file and return a ground truth dict containing mapping from ontology name to
+    GroundTruth object. Discard terms not included in the ontology.
+
+    For each subontology add an item to ground truth dict:
+       a. First creates a ground truth dict mapping from protein_ids to list of term_ids
+       b. then use the created dict to create a boolean matrix of shape ( len( protien_ids), len(terms in ont) )
+          setting True at all valid indices (protien_id_index, term_id)
+       c. Wrap protein_id to protien_id_index mapping for ontology in a groundTruth object
     """
     gt_dict = {}
     with open(gt_file) as f:
@@ -85,8 +97,10 @@ def gt_parser(gt_file, ontologies):
     gts = {}
     for ont in ontologies:
         if gt_dict.get(ont.namespace):
+            # [ len( protien_ids), len(terms in ont) ]
             matrix = np.zeros((len(gt_dict[ont.namespace]), ont.idxs), dtype='bool')
             ids = {}
+            # set True for valid pairs (protien_id, term_id) in matrix
             for i, p_id in enumerate(gt_dict[ont.namespace]):
                 ids[p_id] = i
                 for term_id in gt_dict[ont.namespace][p_id]:
@@ -94,6 +108,7 @@ def gt_parser(gt_file, ontologies):
             logging.debug("gt matrix {} {} ".format(ont.namespace, matrix))
             propagate(matrix, ont, ont.order, mode='max')
             logging.debug("gt matrix propagated {} {} ".format(ont.namespace, matrix))
+            # wrap computed objects in one object and return
             gts[ont.namespace] = GroundTruth(ids, matrix, ont.namespace)
             logging.info('Ground truth: {}, proteins {}'.format(ont.namespace, len(ids)))
 
@@ -105,7 +120,6 @@ def pred_parser(pred_file, ontologies, gts, prop_mode, max_terms=None):
     Parse a prediction file and returns a list of prediction objects, one for each namespace.
     If a predicted is predicted multiple times for the same target, it stores the max.
     This is the slow step if the input file is huge, ca. 1 minute for 5GB input on SSD disk.
-
     """
     ids = {}
     matrix = {}
@@ -148,6 +162,7 @@ def pred_parser(pred_file, ontologies, gts, prop_mode, max_terms=None):
 
 
 def ia_parser(file):
+    """Returns a dict mapping from term to ia weight"""
     ia_dict = {}
     with open(file) as f:
         for line in f:
