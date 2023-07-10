@@ -59,6 +59,7 @@ class Graph:
         logging.debug("toi {}".format(self.toi))
 
         if ia_dict is not None:
+            # create self.ia array
             self.set_ia(ia_dict)
 
         return
@@ -103,6 +104,7 @@ class Graph:
             raise Exception("The sparse matrix doesn't represent an acyclic graph")
 
     def set_ia(self, ia_dict):
+        """Create self.ia np.array setting provided weight at appropriate index as per term_id index mapping"""
         self.ia = np.zeros(self.idxs, dtype='float')
         for term_id in self.terms_dict:
             if ia_dict.get(term_id):
