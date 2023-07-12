@@ -84,6 +84,8 @@ def gt_parser(gt_file, ontologies):
        c. Wrap protein_id to protien_id_index mapping for ontology in a groundTruth object
     """
     gt_dict = {}
+    # generates a dict called gt_dict from thegiven file first
+    # { ont1: { pid_a : [ GOterm1,GOterm2, ...], pid_b : [ GOterm3, ...] }, ont2 : { pid_c.... } }
     with open(gt_file) as f:
         for line in f:
             line = line.strip().split()
