@@ -145,6 +145,10 @@ def propagate(matrix, ont, order, mode='max'):
     if matrix.shape[0] == 0:
         raise Exception("Empty matrix")
 
+    # np.sum(matrix[:, order], axis=0) is an array for topologically sorted terms with that indexes inontology
+    # of how many times that term shows up in matrix.
+    # deepest is an array of indexes of terms that show up in matrix.
+    # only leaf terms show up in this matrix?
     deepest = np.where(np.sum(matrix[:, order], axis=0) > 0)[0][0]
     if deepest.size == 0:
         raise Exception("The matrix is empty")
