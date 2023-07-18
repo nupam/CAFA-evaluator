@@ -1,4 +1,4 @@
-from graph import Prediction, GroundTruth, propagate
+from .graph import Prediction, GroundTruth, propagate
 import numpy as np
 import logging
 # import xml.etree.ElementTree as ET
