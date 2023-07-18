@@ -4,9 +4,9 @@ import os
 import pandas as pd
 import numpy as np
 
-from graph import Graph
-from parser import obo_parser, gt_parser, pred_parser, ia_parser
-from evaluation import get_leafs_idx, get_roots_idx, evaluate_prediction
+from .graph import Graph
+from .parser import obo_parser, gt_parser, pred_parser, ia_parser
+from .evaluation import get_leafs_idx, get_roots_idx, evaluate_prediction
 
 
 if __name__ == '__main__':
